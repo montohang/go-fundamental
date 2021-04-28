@@ -1,0 +1,71 @@
+
+
+  static Qris parseQris(String payload) {
+    var resultTag = Map<int, Map<int, String>>();
+
+    var idx = 0;
+    while (idx < payload.length) {
+      var tagIdx = idx + length;
+
+      var tag = int.parse(payload.substring(idx, tagIdx));
+      var lengthValue = int.parse(payload.substring(tagIdx, tagIdx + length));
+      var value =
+          payload.substring(tagIdx + length, tagIdx + length + lengthValue);
+
+      print('Tag : ' +
+          tag.toString() +
+          ' length : ' +
+          lengthValue.toString() +
+          ' Value : ' +
+          value);
+
+      if (tag == 27 || tag == 26 || tag == 51) {
+        resultTag[tag] = parseSubTag(value);
+      } else {
+        resultTag[tag] = {0: value};
+      }
+      idx = tagIdx + length + lengthValue;
+    }
+
+    return Qris.fromPayload(resultTag);
+  }
+
+  static Map<int, String> parseSubTag(String payload) {
+    var resultSubTag = Map<int, String>();
+    var idx = 0;
+    while (idx < payload.length) {
+      var tagIdx = idx + length;
+
+      var tag = int.parse(payload.substring(idx, tagIdx));
+      var lengthValue = int.parse(payload.substring(tagIdx, tagIdx + length));
+      var value =
+          payload.substring(tagIdx + length, tagIdx + length + lengthValue);
+
+      print('Sub Tag : ' +
+          tag.toString() +
+          ' length : ' +
+          lengthValue.toString() +
+          ' Value : ' +
+          value);
+
+      resultSubTag[tag] = value;
+
+      idx = tagIdx + length + lengthValue;
+    }
+    return resultSubTag;
+  }
+
+  //Tag parse
+  factory Qris.fromPayload(Map<int, Map<int, String>> payload) => Qris(
+    qrType: payload.containsKey(1) ? Utility.checkStringNull(payload[1][0]) : '',
+    nominal: payload.containsKey(54) ? Utility.checkStringNull(payload[54][0]) : '',
+    merchantName: payload.containsKey(59) ? Utility.checkStringNull(payload[59][0]) : '',
+    merchantCity: payload.containsKey(60) ? Utility.checkStringNull(payload[60][0]) : '',
+    merchantPan: payload.containsKey(26) ? Utility.checkStringNull(payload[26][1]) : '',
+    merchantGlobalUniqueId: payload.containsKey(26) ? Utility.checkStringNull(payload[26][0]) : '',
+    merchantId: payload.containsKey(26) ? Utility.checkStringNull(payload[26][2]) : '',
+    crossBorder: payload.containsKey(58) ? Utility.checkStringNull(payload[58][0]) : '',
+  );
+
+  //Contoh data QRIS
+  00020101021126690017ID.CO.BPDBALI.WWW01189360012900000000400215ID10200000002750303UMI5204939953033605502025606500.005802ID5914PERUSAHAAN 0016008DENPASAR61050000062070703A0363047482
